@@ -265,16 +265,16 @@ spec:
 
 compass 的 service mesh 功能
 
-- 服务拓扑
-- 服务列表
-- 灰度发布
-- 流量监控
-- 路由管理
-- 流量策略
-- 安全策略
-- 调用链跟踪
-- 服务网关
-- 资源列表
+- 服务拓扑 ✔︎
+- 服务列表 ✔︎
+- 灰度发布 ✔︎
+- 流量监控 ✔︎
+- 路由管理 ✔︎
+- 流量策略 ✔︎
+- 服务网关 ✔︎
+- 安全策略 ✺
+- 调用链跟踪 ✔︎
+- 资源列表 ✔︎
 
 Galley：Galley 代表其他的 Istio 控制平面组件，用来验证用户编写的 Istio API 配置
 
@@ -1133,4 +1133,542 @@ reporter=.=source;.;source_workload=.=productpage-v1;.;source_workload_namespace
 server.initialization_time_ms: P0(nan,14000.0) P25(nan,14250.0) P50(nan,14500.0) P75(nan,14750.0) P90(nan,14900.0) P95(nan,14950.0) P99(nan,14990.0) P99.5(nan,14995.0) P99.9(nan,14999.0) P100(nan,15000.0)
 ```
 
--
+## 一些常用的运维命令
+
+```text
+
+//查看里面的为服务
+istio ps
+
+//查看端口的一些fliter
+istioctl  pc l  productpage-v1-65576bb7bf-qlqfh.default --port 80 -o json
+
+//查看网关下面的virtualhost RDS
+[devops_root@ali-tekton-CI-devops-dev-01 ~]$ istioctl pc   r istio-ingressgateway-58649bfdf4-p84z4.istio-system --name http.80  -o json
+[
+    {
+        "name": "http.80",
+        "virtualHosts": [
+            {
+                "name": "*:80",
+                "domains": [
+                    "*"
+                ],
+                "routes": [
+                    {
+                        "match": {
+                            "path": "/productpage",
+                            "caseSensitive": true
+                        },
+                        "route": {
+                            "cluster": "outbound|9080||productpage.default.svc.cluster.local",
+                            "timeout": "0s",
+                            "retryPolicy": {
+                                "retryOn": "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes",
+                                "numRetries": 2,
+                                "retryHostPredicate": [
+                                    {
+                                        "name": "envoy.retry_host_predicates.previous_hosts"
+                                    }
+                                ],
+                                "hostSelectionRetryMaxAttempts": "5",
+                                "retriableStatusCodes": [
+                                    503
+                                ]
+                            },
+                            "maxGrpcTimeout": "0s"
+                        },
+                        "metadata": {
+                            "filterMetadata": {
+                                "istio": {
+                                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/virtual-service/bookinfo"
+                                }
+                            }
+                        },
+                        "decorator": {
+                            "operation": "productpage.default.svc.cluster.local:9080/productpage"
+                        }
+                    },
+                    {
+                        "match": {
+                            "prefix": "/static",
+                            "caseSensitive": true
+                        },
+                        "route": {
+                            "cluster": "outbound|9080||productpage.default.svc.cluster.local",
+                            "timeout": "0s",
+                            "retryPolicy": {
+                                "retryOn": "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes",
+                                "numRetries": 2,
+                                "retryHostPredicate": [
+                                    {
+                                        "name": "envoy.retry_host_predicates.previous_hosts"
+                                    }
+                                ],
+                                "hostSelectionRetryMaxAttempts": "5",
+                                "retriableStatusCodes": [
+                                    503
+                                ]
+                            },
+                            "maxGrpcTimeout": "0s"
+                        },
+                        "metadata": {
+                            "filterMetadata": {
+                                "istio": {
+                                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/virtual-service/bookinfo"
+                                }
+                            }
+                        },
+                        "decorator": {
+                            "operation": "productpage.default.svc.cluster.local:9080/static*"
+                        }
+                    },
+                    {
+                        "match": {
+                            "path": "/login",
+                            "caseSensitive": true
+                        },
+                        "route": {
+                            "cluster": "outbound|9080||productpage.default.svc.cluster.local",
+                            "timeout": "0s",
+                            "retryPolicy": {
+                                "retryOn": "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes",
+                                "numRetries": 2,
+                                "retryHostPredicate": [
+                                    {
+                                        "name": "envoy.retry_host_predicates.previous_hosts"
+                                    }
+                                ],
+                                "hostSelectionRetryMaxAttempts": "5",
+                                "retriableStatusCodes": [
+                                    503
+                                ]
+                            },
+                            "maxGrpcTimeout": "0s"
+                        },
+                        "metadata": {
+                            "filterMetadata": {
+                                "istio": {
+                                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/virtual-service/bookinfo"
+                                }
+                            }
+                        },
+                        "decorator": {
+                            "operation": "productpage.default.svc.cluster.local:9080/login"
+                        }
+                    },
+                    {
+                        "match": {
+                            "path": "/logout",
+                            "caseSensitive": true
+                        },
+                        "route": {
+                            "cluster": "outbound|9080||productpage.default.svc.cluster.local",
+                            "timeout": "0s",
+                            "retryPolicy": {
+                                "retryOn": "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes",
+                                "numRetries": 2,
+                                "retryHostPredicate": [
+                                    {
+                                        "name": "envoy.retry_host_predicates.previous_hosts"
+                                    }
+                                ],
+                                "hostSelectionRetryMaxAttempts": "5",
+                                "retriableStatusCodes": [
+                                    503
+                                ]
+                            },
+                            "maxGrpcTimeout": "0s"
+                        },
+                        "metadata": {
+                            "filterMetadata": {
+                                "istio": {
+                                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/virtual-service/bookinfo"
+                                }
+                            }
+                        },
+                        "decorator": {
+                            "operation": "productpage.default.svc.cluster.local:9080/logout"
+                        }
+                    },
+                    {
+                        "match": {
+                            "prefix": "/api/v1/products",
+                            "caseSensitive": true
+                        },
+                        "route": {
+                            "cluster": "outbound|9080||productpage.default.svc.cluster.local",
+                            "timeout": "0s",
+                            "retryPolicy": {
+                                "retryOn": "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes",
+                                "numRetries": 2,
+                                "retryHostPredicate": [
+                                    {
+                                        "name": "envoy.retry_host_predicates.previous_hosts"
+                                    }
+                                ],
+                                "hostSelectionRetryMaxAttempts": "5",
+                                "retriableStatusCodes": [
+                                    503
+                                ]
+                            },
+                            "maxGrpcTimeout": "0s"
+                        },
+                        "metadata": {
+                            "filterMetadata": {
+                                "istio": {
+                                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/virtual-service/bookinfo"
+                                }
+                            }
+                        },
+                        "decorator": {
+                            "operation": "productpage.default.svc.cluster.local:9080/api/v1/products*"
+                        }
+                    }
+                ],
+                "includeRequestAttemptCount": true
+            }
+        ],
+        "validateClusters": false
+    }
+]
+
+
+//然后再到CDS
+[devops_root@ali-tekton-CI-devops-dev-01 ~]$  istioctl pc  c  istio-ingressgateway-58649bfdf4-p84z4.istio-system  | grep productpage.default.svc.cluster.local
+outbound_.9080_._.productpage.default.svc.cluster.local                          -         -               -             EDS            productpage.default
+outbound_.9080_.v1_.productpage.default.svc.cluster.local                        -         -               -             EDS            productpage.default
+productpage.default.svc.cluster.local                                            9080      -               outbound      EDS            productpage.default
+productpage.default.svc.cluster.local                                            9080      v1              outbound      EDS            productpage.default
+
+
+[devops_root@ali-tekton-CI-devops-dev-01 ~]$  istioctl pc  c  istio-ingressgateway-58649bfdf4-p84z4.istio-system  --fqdn  productpage.default.svc.cluster.local -o json
+[
+    {
+        "name": "outbound_.9080_._.productpage.default.svc.cluster.local",
+        "type": "EDS",
+        "edsClusterConfig": {
+            "edsConfig": {
+                "ads": {},
+                "resourceApiVersion": "V3"
+            },
+            "serviceName": "outbound_.9080_._.productpage.default.svc.cluster.local"
+        },
+        "connectTimeout": "10s",
+        "circuitBreakers": {
+            "thresholds": [
+                {
+                    "maxConnections": 4294967295,
+                    "maxPendingRequests": 4294967295,
+                    "maxRequests": 4294967295,
+                    "maxRetries": 4294967295
+                }
+            ]
+        },
+        "metadata": {
+            "filterMetadata": {
+                "istio": {
+                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/destination-rule/productpage"
+                }
+            }
+        },
+        "filters": [
+            {
+                "name": "istio.metadata_exchange",
+                "typedConfig": {
+                    "@type": "type.googleapis.com/udpa.type.v1.TypedStruct",
+                    "typeUrl": "type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange",
+                    "value": {
+                        "protocol": "istio-peer-exchange"
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "name": "outbound_.9080_.v1_.productpage.default.svc.cluster.local",
+        "type": "EDS",
+        "edsClusterConfig": {
+            "edsConfig": {
+                "ads": {},
+                "resourceApiVersion": "V3"
+            },
+            "serviceName": "outbound_.9080_.v1_.productpage.default.svc.cluster.local"
+        },
+        "connectTimeout": "10s",
+        "circuitBreakers": {
+            "thresholds": [
+                {
+                    "maxConnections": 4294967295,
+                    "maxPendingRequests": 4294967295,
+                    "maxRequests": 4294967295,
+                    "maxRetries": 4294967295
+                }
+            ]
+        },
+        "metadata": {
+            "filterMetadata": {
+                "istio": {
+                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/destination-rule/productpage",
+                    "subset": "v1"
+                }
+            }
+        },
+        "filters": [
+            {
+                "name": "istio.metadata_exchange",
+                "typedConfig": {
+                    "@type": "type.googleapis.com/udpa.type.v1.TypedStruct",
+                    "typeUrl": "type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange",
+                    "value": {
+                        "protocol": "istio-peer-exchange"
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "transportSocketMatches": [
+            {
+                "name": "tlsMode-istio",
+                "match": {
+                    "tlsMode": "istio"
+                },
+                "transportSocket": {
+                    "name": "envoy.transport_sockets.tls",
+                    "typedConfig": {
+                        "@type": "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
+                        "commonTlsContext": {
+                            "tlsCertificateSdsSecretConfigs": [
+                                {
+                                    "name": "default",
+                                    "sdsConfig": {
+                                        "apiConfigSource": {
+                                            "apiType": "GRPC",
+                                            "transportApiVersion": "V3",
+                                            "grpcServices": [
+                                                {
+                                                    "envoyGrpc": {
+                                                        "clusterName": "sds-grpc"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "initialFetchTimeout": "0s",
+                                        "resourceApiVersion": "V3"
+                                    }
+                                }
+                            ],
+                            "combinedValidationContext": {
+                                "defaultValidationContext": {
+                                    "matchSubjectAltNames": [
+                                        {
+                                            "exact": "spiffe://cluster.local/ns/default/sa/bookinfo-productpage"
+                                        }
+                                    ]
+                                },
+                                "validationContextSdsSecretConfig": {
+                                    "name": "ROOTCA",
+                                    "sdsConfig": {
+                                        "apiConfigSource": {
+                                            "apiType": "GRPC",
+                                            "transportApiVersion": "V3",
+                                            "grpcServices": [
+                                                {
+                                                    "envoyGrpc": {
+                                                        "clusterName": "sds-grpc"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "initialFetchTimeout": "0s",
+                                        "resourceApiVersion": "V3"
+                                    }
+                                }
+                            },
+                            "alpnProtocols": [
+                                "istio-peer-exchange",
+                                "istio"
+                            ]
+                        },
+                        "sni": "outbound_.9080_._.productpage.default.svc.cluster.local"
+                    }
+                }
+            },
+            {
+                "name": "tlsMode-disabled",
+                "match": {},
+                "transportSocket": {
+                    "name": "envoy.transport_sockets.raw_buffer"
+                }
+            }
+        ],
+        "name": "outbound|9080||productpage.default.svc.cluster.local",
+        "type": "EDS",
+        "edsClusterConfig": {
+            "edsConfig": {
+                "ads": {},
+                "resourceApiVersion": "V3"
+            },
+            "serviceName": "outbound|9080||productpage.default.svc.cluster.local"
+        },
+        "connectTimeout": "10s",
+        "circuitBreakers": {
+            "thresholds": [
+                {
+                    "maxConnections": 4294967295,
+                    "maxPendingRequests": 4294967295,
+                    "maxRequests": 4294967295,
+                    "maxRetries": 4294967295
+                }
+            ]
+        },
+        "metadata": {
+            "filterMetadata": {
+                "istio": {
+                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/destination-rule/productpage"
+                }
+            }
+        },
+        "filters": [
+            {
+                "name": "istio.metadata_exchange",
+                "typedConfig": {
+                    "@type": "type.googleapis.com/udpa.type.v1.TypedStruct",
+                    "typeUrl": "type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange",
+                    "value": {
+                        "protocol": "istio-peer-exchange"
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "transportSocketMatches": [
+            {
+                "name": "tlsMode-istio",
+                "match": {
+                    "tlsMode": "istio"
+                },
+                "transportSocket": {
+                    "name": "envoy.transport_sockets.tls",
+                    "typedConfig": {
+                        "@type": "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
+                        "commonTlsContext": {
+                            "tlsCertificateSdsSecretConfigs": [
+                                {
+                                    "name": "default",
+                                    "sdsConfig": {
+                                        "apiConfigSource": {
+                                            "apiType": "GRPC",
+                                            "transportApiVersion": "V3",
+                                            "grpcServices": [
+                                                {
+                                                    "envoyGrpc": {
+                                                        "clusterName": "sds-grpc"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "initialFetchTimeout": "0s",
+                                        "resourceApiVersion": "V3"
+                                    }
+                                }
+                            ],
+                            "combinedValidationContext": {
+                                "defaultValidationContext": {
+                                    "matchSubjectAltNames": [
+                                        {
+                                            "exact": "spiffe://cluster.local/ns/default/sa/bookinfo-productpage"
+                                        }
+                                    ]
+                                },
+                                "validationContextSdsSecretConfig": {
+                                    "name": "ROOTCA",
+                                    "sdsConfig": {
+                                        "apiConfigSource": {
+                                            "apiType": "GRPC",
+                                            "transportApiVersion": "V3",
+                                            "grpcServices": [
+                                                {
+                                                    "envoyGrpc": {
+                                                        "clusterName": "sds-grpc"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "initialFetchTimeout": "0s",
+                                        "resourceApiVersion": "V3"
+                                    }
+                                }
+                            },
+                            "alpnProtocols": [
+                                "istio-peer-exchange",
+                                "istio"
+                            ]
+                        },
+                        "sni": "outbound_.9080_.v1_.productpage.default.svc.cluster.local"
+                    }
+                }
+            },
+            {
+                "name": "tlsMode-disabled",
+                "match": {},
+                "transportSocket": {
+                    "name": "envoy.transport_sockets.raw_buffer"
+                }
+            }
+        ],
+        "name": "outbound|9080|v1|productpage.default.svc.cluster.local",
+        "type": "EDS",
+        "edsClusterConfig": {
+            "edsConfig": {
+                "ads": {},
+                "resourceApiVersion": "V3"
+            },
+            "serviceName": "outbound|9080|v1|productpage.default.svc.cluster.local"
+        },
+        "connectTimeout": "10s",
+        "circuitBreakers": {
+            "thresholds": [
+                {
+                    "maxConnections": 4294967295,
+                    "maxPendingRequests": 4294967295,
+                    "maxRequests": 4294967295,
+                    "maxRetries": 4294967295
+                }
+            ]
+        },
+        "metadata": {
+            "filterMetadata": {
+                "istio": {
+                    "config": "/apis/networking.istio.io/v1alpha3/namespaces/default/destination-rule/productpage",
+                    "subset": "v1"
+                }
+            }
+        },
+        "filters": [
+            {
+                "name": "istio.metadata_exchange",
+                "typedConfig": {
+                    "@type": "type.googleapis.com/udpa.type.v1.TypedStruct",
+                    "typeUrl": "type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange",
+                    "value": {
+                        "protocol": "istio-peer-exchange"
+                    }
+                }
+            }
+        ]
+    }
+]
+
+
+//最后到EDS
+[devops_root@ali-tekton-CI-devops-dev-01 ~]$ istioctl  pc  endpoint istio-ingressgateway-58649bfdf4-p84z4.istio-system |grep productpage.default.svc.cluster.local
+10.16.0.112:9080                 HEALTHY     OK                outbound_.9080_._.productpage.default.svc.cluster.local
+10.16.0.112:9080                 HEALTHY     OK                outbound_.9080_.v1_.productpage.default.svc.cluster.local
+10.16.0.112:9080                 HEALTHY     OK                outbound|9080|v1|productpage.default.svc.cluster.local
+10.16.0.112:9080                 HEALTHY     OK                outbound|9080||productpage.default.svc.cluster.local
+
+
+```
